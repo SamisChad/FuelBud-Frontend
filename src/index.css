@@ -1,0 +1,489 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: black; /* fallback */
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: 'Poppins', sans-serif;
+}
+
+.overlay {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, rgba(0, 60, 120, 0.4), rgba(0, 0, 0, 0.9));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.login-box {
+  position: relative;
+  z-index: 2;
+  background: rgba(10, 15, 30, 0.5);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 25px rgba(0, 160, 255, 0.3),
+    0 8px 25px rgba(0, 0, 0, 0.7);
+  padding: 45px 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 380px;
+  transition: all 0.4s ease;
+}
+
+
+.login-box:hover {
+  box-shadow:
+    0 0 35px rgba(0, 200, 255, 0.5),
+    0 10px 35px rgba(0, 0, 0, 0.6);
+  transform: scale(1.02);
+}
+
+.login-box input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e8f0ff;
+  padding: 12px;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 14px;
+  transition: 0.2s;
+}
+
+.login-box input:focus {
+  outline: none;
+  border-color: #00aaff;
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.login-box button {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-box button:hover {
+  background: linear-gradient(90deg, #00aaff, #007bff);
+  box-shadow: 0 0 12px rgba(0, 160, 255, 0.6);
+}
+
+.login-box h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #40a9ff;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.login-box p {
+  color: #b8c6e0;
+}
+
+.overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 140, 255, 0.25), transparent 60%);
+  pointer-events: none;
+}
+
+.overlay::after {
+  content: "";
+  position: absolute;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle at center, rgba(0, 180, 255, 0.15), transparent 70%);
+  animation: pulse 6s ease-in-out infinite;
+  filter: blur(100px);
+  z-index: 0;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(1); }
+}
+
+h1 {
+  animation: glowText 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes glowText {
+  from {
+    text-shadow: 0 0 10px #007bff, 0 0 20px #00b3ff, 0 0 30px #00d9ff;
+  }
+  to {
+    text-shadow: 0 0 20px #00b3ff, 0 0 35px #00ffff, 0 0 50px #00c3ff;
+  }
+}
+
+/* --- Electric pulse glow for FuelBud title --- */
+.glow-text {
+  color: #99cfff;
+  text-shadow: 0 0 10px #00bfff, 0 0 20px #0099ff, 0 0 30px #0077ff;
+  animation: pulseGlow 3s ease-in-out infinite;
+  letter-spacing: 1px;
+}
+
+.glow-text .highlight {
+  color: #00c8ff;
+  text-shadow: 0 0 12px #00e0ff, 0 0 25px #00b3ff, 0 0 40px #00f0ff;
+  animation: flicker 2.5s infinite ease-in-out alternate;
+}
+
+/* smooth breathing effect */
+@keyframes pulseGlow {
+  0% {
+    text-shadow: 0 0 10px #007bff, 0 0 20px #00b3ff, 0 0 30px #00d9ff;
+    opacity: 0.9;
+  }
+  50% {
+    text-shadow: 0 0 20px #00b3ff, 0 0 35px #00ffff, 0 0 50px #00c3ff;
+    opacity: 1;
+  }
+  100% {
+    text-shadow: 0 0 10px #007bff, 0 0 20px #00b3ff, 0 0 30px #00d9ff;
+    opacity: 0.9;
+  }
+}
+
+/* subtle flicker for FuelBud word */
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.6;
+  }
+}
+
+/* ---------------- Landing Page Styles ---------------- */
+
+.landing-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* keeps it steady while scrolling */
+  overflow: hidden;
+}
+
+
+/* Header (FuelBud + Sign In) */
+.landing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 60px;
+}
+
+/* Glowing FuelBud title */
+.landing-title {
+  font-size: 5rem;
+  font-weight: 800;
+  color: #00c3ff;
+  text-shadow: 0 0 20px #00aaff, 0 0 40px #00ccff;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+  cursor: default;
+}
+
+@keyframes titleGlow {
+  from {
+    text-shadow: 0 0 15px #00aaff, 0 0 30px #00bfff;
+  }
+  to {
+    text-shadow: 0 0 30px #00e5ff, 0 0 60px #00ffff;
+  }
+}
+
+/* Sign In button top-right */
+.signin-btn {
+  background: linear-gradient(90deg, #008cff, #00e0ff);
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
+  transition: 0.3s;
+}
+
+.signin-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+/* Center Mercedes text */
+.landing-center {
+  text-align: center;
+  font-size: 4rem;
+  color: #e6f9ff;
+  text-shadow: 0 0 30px rgba(0, 200, 255, 0.6);
+}
+
+/* Footer (Mercedes tagline) */
+.landing-footer {
+  position: absolute;
+  bottom: 45px;
+  right: 55px;
+  font-size: 1rem;
+  opacity: 0.8;
+  text-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+}
+
+/* FuelBud fixed on every page (top-left) */
+.global-header {
+  position: fixed;
+  top: 12px;
+  left: 18px;
+  z-index: 9999; /* way above everything else */
+  pointer-events: none; /* so overlay clicks pass through */
+}
+
+.global-logo {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: #00d4ff;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-shadow:
+    0 0 15px #00aaff,
+    0 0 35px #00ccff,
+    0 0 60px #00e5ff;
+  animation: constantGlow 3.5s ease-in-out infinite alternate;
+  z-index: 9999;
+  position: relative;
+  pointer-events: auto; /* keeps the logo clickable */
+}
+
+
+
+@keyframes flicker {
+  0%, 97%, 100% { opacity: 1; }
+  98%, 99% { opacity: 0.8; }
+}
+
+@keyframes constantGlow {
+  0% {
+    text-shadow:
+      0 0 15px #00aaff,
+      0 0 35px #00ccff,
+      0 0 60px #00e5ff;
+    opacity: 0.9;
+  }
+  50% {
+    text-shadow:
+      0 0 25px #00cfff,
+      0 0 55px #00f0ff,
+      0 0 80px #00ffff;
+    opacity: 1;
+  }
+  100% {
+    text-shadow:
+      0 0 15px #00aaff,
+      0 0 35px #00ccff,
+      0 0 60px #00e5ff;
+    opacity: 0.9;
+  }
+}
+
+.global-logo:hover {
+  transform: scale(1.05);
+  text-shadow:
+    0 0 35px #00ffff,
+    0 0 70px #00ffff,
+    0 0 120px #00faff;
+}
+
+/* Sign In button (Landing page only) */
+.landing-signin {
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  background: linear-gradient(90deg, #008cff, #00e0ff);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 0 15px rgba(0, 200, 255, 0.6);
+  transition: 0.3s;
+  z-index: 1000;
+  animation: buttonGlow 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes buttonGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+  }
+}
+
+.landing-signin:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+/* Landing Page Layout */
+.landing-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.landing-footer {
+  position: fixed;
+  bottom: 12px;
+  right: 18px;
+  font-size: 0.95rem;
+  color: #b8d7f5;
+  opacity: 0.85;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+  letter-spacing: 0.5px;
+  z-index: 1000;
+  animation: footerGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes footerGlow {
+  0% {
+    text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+  }
+}
+
+/* === Glow and Blur for Login Box === */
+.login-box {
+  box-shadow: 0 0 40px rgba(0, 191, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  transition: all 0.4s ease;
+}
+
+.login-box:hover {
+  box-shadow: 0 0 55px rgba(0, 230, 255, 0.45);
+  transform: scale(1.02);
+}
+
+/* === Responsive Background Adjustments === */
+@media (max-width: 1024px) {
+  .landing-container,
+  .min-h-screen {
+    background-size: 130%;
+    background-position: center top;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-container,
+  .min-h-screen {
+    background-size: 160%;
+    background-position: center top;
+  }
+
+  .login-box {
+    width: 90%;
+    padding: 2rem;
+  }
+}
+
+.fuel-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.glow-text {
+  text-shadow: 0 0 10px #00bfff, 0 0 20px #00ffff, 0 0 30px #00d9ff;
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.9;
+    text-shadow: 0 0 10px #007bff, 0 0 20px #00b3ff, 0 0 30px #00d9ff;
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 25px #00bfff, 0 0 40px #00ffff, 0 0 60px #00e5ff;
+  }
+}
+
+button:hover {
+  animation: pulseButton 1.8s ease-in-out infinite;
+}
+
+@keyframes pulseButton {
+  0% {
+    box-shadow: 0 0 10px #00bfff, 0 0 20px #00d9ff, 0 0 30px #00ffff;
+  }
+  50% {
+    box-shadow: 0 0 25px #00cfff, 0 0 50px #00ffff, 0 0 80px #00faff;
+  }
+  100% {
+    box-shadow: 0 0 10px #00bfff, 0 0 20px #00d9ff, 0 0 30px #00ffff;
+  }
+}
+
+
+
+
+
+
+
+
+
+
