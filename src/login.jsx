@@ -84,7 +84,7 @@ export default function Login() {
           firstName: first.trim(),
           lastName: last.trim(),
           email: regEmail.trim(),
-          createdAt: new Date(),
+        createdAt: new Date(),
         })
           .then(() => {
             console.log("✅ User data saved to Firestore");

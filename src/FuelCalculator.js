@@ -7,13 +7,33 @@ import { Link, useLocation } from "react-router-dom";
 export default function FuelCalculator() {
   const location = useLocation();
 
-  // Mercedes models
+  // Mercedes models with styling
   const MERCEDES_MODELS = [
-    { id: "c_300", label: "C 300 Sedan" },
-    { id: "e_350", label: "E 350 Sedan" },
-    { id: "glc_300", label: "GLC 300 SUV" },
-    { id: "gle_350", label: "GLE 350 SUV" },
+    {
+      id: "c_300",
+      badge: "C-CLASS",
+      img: "/models/c300.png",
+    },
+    {
+      id: "e_350",
+      //label: "E 350 Sedan",
+      badge: "E-CLASS",
+      img: "/models/e350.png",
+    },
+    {
+      id: "glc_300",
+      //label: "GLC 300 SUV",
+      badge: "GLC",
+      img: "/models/glc300.png",
+    },
+    {
+      id: "gle_350",
+      //label: "GLE 350 SUV",
+      badge: "GLE",
+      img: "/models/gle350.png",
+    }
   ];
+  
 
   // UI State
   const [selectedModel, setSelectedModel] = useState("c_300");
@@ -80,14 +100,14 @@ export default function FuelCalculator() {
     // Small delay to ensure reset happens first, then start animation
     const timeoutId = setTimeout(() => {
       intervalId = setInterval(() => {
-        step++;
+      step++;
         setAnimatedMPG((prev) => Math.min(prev + incMPG, result.predicted_mpg));
         setAnimatedBaseMPG((prev) => Math.min(prev + incBase, result.base_mpg));
         setAnimatedCost((prev) => Math.min(prev + incCost, result.fuel_cost));
         if (step >= steps) {
           clearInterval(intervalId);
         }
-      }, duration / steps);
+    }, duration / steps);
     }, 50);
 
     return () => {
@@ -146,20 +166,27 @@ export default function FuelCalculator() {
   // ---------------------- UI ----------------------
   return (
     <div
-      className="min-h-screen flex flex-col justify-center items-center text-white font-sans relative"
-      style={{
-        backgroundImage: `url(${process.env.PUBLIC_URL + "/mercedes-bg.jpg"})`,
-        backgroundSize: "80%",
-        backgroundPosition: "center center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
-        backgroundColor: "#000",
-        width: "100vw",
-      }}
-    >
-      <div className="overlay absolute inset-0 pointer-events-none"></div>
+    className="min-h-screen w-full text-white font-sans relative overflow-y-auto"
+    style={{
+      backgroundImage: `url(${process.env.PUBLIC_URL + "/mercedes-bg.jpg"})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center top",
+      backgroundRepeat: "no-repeat",
+      backgroundAttachment: "scroll",
+      backgroundColor: "#000",
+    }}
+  >
 
-      <div className="relative z-10 flex flex-col justify-center items-center w-full">
+    {/* FULL-SCREEN OVERLAY BLUR — fixed properly */}
+    <div 
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+      }}
+    ></div>
+  
+  <div className="relative z-10 w-full flex flex-col items-center px-4 pt-16 pb-32">
 
         {firstName && (
           <motion.h2
@@ -192,51 +219,130 @@ export default function FuelCalculator() {
 
           <div className="relative z-10">
 
-            {/* Model Dropdown */}
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full p-3 mb-4 rounded-lg bg-gray-800 text-white border border-cyan-600"
-            >
-              {MERCEDES_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label}</option>
-              ))}
-            </select>
+            {/* Model Selection - Mercedes Style */}
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-cyan-300 mb-4 uppercase tracking-[0.2em] letter-spacing-wider">
+                Select Your Mercedes Model
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+  {MERCEDES_MODELS.map((model) => (
+    <motion.div
+      key={model.id}
+      onClick={() => setSelectedModel(model.id)}
+      className={`
+        relative rounded-xl overflow-hidden cursor-pointer border backdrop-blur-xl 
+        transition-all duration-500 group
+        ${selectedModel === model.id
+          ? "border-cyan-400 shadow-[0_0_35px_rgba(0,255,255,0.8)]"
+          : "border-cyan-600/40 hover:border-cyan-300/60 hover:shadow-[0_0_25px_rgba(0,255,255,0.4)]"
+        }
+      `}
+      whileHover={{ scale: 1.05, rotate: 0.5 }}
+      whileTap={{ scale: 0.97 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      style={{
+        background: "rgba(10,20,30,0.45)",
+      }}
+    >
 
-            {/* Inputs */}
-            <input
-              type="number"
-              placeholder="Distance (miles)"
-              value={distance}
-              onChange={(e) => setDistance(e.target.value)}
-              className="w-full p-3 mb-4 rounded-lg bg-gray-800 border border-cyan-600"
-            />
+      {/* --- CAR IMAGE WITH ZOOM FADE --- */}
+      <motion.img
+        src={model.img}
+        alt={model.label}
+        className="w-full h-32 object-cover opacity-90"
+        initial={{ scale: 1.15, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        whileHover={{ scale: 1.08 }}
+      />
 
-            <input
-              type="number"
+      {/* --- TOP-TO-BOTTOM COOL FADE GRADIENT --- */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+
+      {/* --- TEXT SLIDE UP ON LOAD --- */}
+      <motion.div
+        className="absolute bottom-3 left-3 z-20"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        <p className="text-[10px] uppercase tracking-[0.25em] text-cyan-300 font-bold drop-shadow-lg">
+          {model.badge}
+        </p>
+        <p className="text-sm font-semibold text-white drop-shadow-xl">
+          {model.label}
+        </p>
+      </motion.div>
+
+      {/* --- CYAN SELECTION LINE --- */}
+      {selectedModel === model.id && (
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 0.4 }}
+          className="absolute bottom-0 left-0 h-[3px] bg-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.9)]"
+        />
+      )}
+
+      {/* --- PREMIUM GLASS REFLECTION SWEEP (like Mercedes site) --- */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ x: "-100%" }}
+        whileHover={{ x: "100%" }}
+        transition={{
+          duration: 1.2,
+          ease: "easeInOut"
+        }}
+        style={{
+          background:
+            "linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)",
+          mixBlendMode: "screen",
+        }}
+      />
+
+    </motion.div>
+  ))}
+</div>
+
+
+            </div>
+
+        {/* Inputs */}
+        <input
+          type="number"
+          placeholder="Distance (miles)"
+          value={distance}
+          onChange={(e) => setDistance(e.target.value)}
+          className="w-full p-3 mb-4 rounded-lg bg-gray-800 border border-cyan-600"
+        />
+
+        <input
+          type="number"
               placeholder="Fuel Used (gallons)"   // 🔥 renamed to make sense
               value={speed}
               onChange={(e) => setSpeed(e.target.value)}
-              className="w-full p-3 mb-4 rounded-lg bg-gray-800 border border-cyan-600"
-            />
+          className="w-full p-3 mb-4 rounded-lg bg-gray-800 border border-cyan-600"
+        />
 
-            <input
-              type="number"
-              placeholder="Fuel Price ($ per gallon)"
-              value={fuelPrice}
-              onChange={(e) => setFuelPrice(e.target.value)}
-              className="w-full p-3 mb-6 rounded-lg bg-gray-800 border border-cyan-600"
-            />
+        <input
+          type="number"
+          placeholder="Fuel Price ($ per gallon)"
+          value={fuelPrice}
+          onChange={(e) => setFuelPrice(e.target.value)}
+          className="w-full p-3 mb-6 rounded-lg bg-gray-800 border border-cyan-600"
+        />
 
-            {/* Button */}
-            <button
-              onClick={handleCalculate}
-              disabled={loading}
-              className={`w-full py-2 rounded-lg font-semibold transition-all duration-500 ${
-                loading
-                  ? "bg-blue-900 cursor-wait text-gray-300"
-                  : "bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300"
-              }`}
+        {/* Button */}
+        <button
+          onClick={handleCalculate}
+          disabled={loading}
+          className={`w-full py-2 rounded-lg font-semibold transition-all duration-500 ${
+            loading
+              ? "bg-blue-900 cursor-wait text-gray-300"
+              : "bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300"
+          }`}
               style={!loading ? {
                 boxShadow: "0 0 10px rgba(0, 200, 255, 0.3)",
                 transition: "box-shadow 0.3s ease"
@@ -251,15 +357,15 @@ export default function FuelCalculator() {
                   e.currentTarget.style.boxShadow = "0 0 10px rgba(0, 200, 255, 0.3)";
                 }
               }}
-            >
-              {loading ? (
-                <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2 }}>
-                  Calculating...
-                </motion.span>
-              ) : (
-                "Calculate"
-              )}
-            </button>
+        >
+          {loading ? (
+            <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2 }}>
+              Calculating...
+            </motion.span>
+          ) : (
+            "Calculate"
+          )}
+        </button>
 
             {/* Compare Button */}
             <div className="mt-4 flex justify-center">
