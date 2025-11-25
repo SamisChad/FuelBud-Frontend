@@ -46,9 +46,27 @@ export default function Login() {
     }
   };
 
+  // Registration loading state
+  const [isRegisteringUser, setIsRegisteringUser] = useState(false);
+
   // ---------- REGISTER ----------
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Validate password before proceeding
+    if (!passValid) {
+      alert("❌ Please ensure your password meets all requirements.");
+      return;
+    }
+
+    // Validate required fields
+    if (!first.trim() || !last.trim() || !regEmail.trim() || !regPass.trim()) {
+      alert("❌ Please fill in all fields.");
+      return;
+    }
+
+    setIsRegisteringUser(true);
+    
     try {
       // 1️⃣ Create Firebase Auth user
       const userCred = await createUserWithEmailAndPassword(
@@ -57,19 +75,52 @@ export default function Login() {
         regPass
       );
       const user = userCred.user;
+      console.log("✅ Auth user created:", user.uid);
 
-      // 2️⃣ Save additional user info to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        firstName: first,
-        lastName: last,
-        email: regEmail,
-        createdAt: new Date(),
-      });
+      // 2️⃣ Save additional user info to Firestore (completely non-blocking)
+      // Use setTimeout to ensure this doesn't block navigation
+      setTimeout(() => {
+        setDoc(doc(db, "users", user.uid), {
+          firstName: first.trim(),
+          lastName: last.trim(),
+          email: regEmail.trim(),
+          createdAt: new Date(),
+        })
+          .then(() => {
+            console.log("✅ User data saved to Firestore");
+          })
+          .catch((firestoreError) => {
+            console.error("Firestore error (non-blocking):", firestoreError);
+            // Continue even if Firestore fails - user is still created in Auth
+          });
+      }, 0);
 
-      alert("🎉 Account created!");
-      navigate("/dashboard");
+      // 3️⃣ Reset loading state immediately
+      setIsRegisteringUser(false);
+      
+      // 4️⃣ Navigate to dashboard with firstName in state (for immediate display)
+      try {
+        navigate("/dashboard", { 
+          replace: true,
+          state: { firstName: first.trim() }
+        });
+      } catch (navError) {
+        console.error("Navigation error, using window.location:", navError);
+        window.location.href = "/dashboard";
+      }
     } catch (err) {
-      alert("❌ " + err.message);
+      setIsRegisteringUser(false); // Reset loading state on error
+      let errorMessage = "Failed to create account. ";
+      if (err.code === "auth/email-already-in-use") {
+        errorMessage += "This email is already registered.";
+      } else if (err.code === "auth/weak-password") {
+        errorMessage += "Password is too weak.";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage += "Invalid email address.";
+      } else {
+        errorMessage += err.message;
+      }
+      alert("❌ " + errorMessage);
       console.error("Register error:", err);
     }
   };
@@ -106,6 +157,7 @@ export default function Login() {
                   placeholder="First name"
                   value={first}
                   onChange={(e) => setFirst(e.target.value)}
+                  required
                 />
 
                 <input
@@ -113,6 +165,7 @@ export default function Login() {
                   placeholder="Last name"
                   value={last}
                   onChange={(e) => setLast(e.target.value)}
+                  required
                 />
 
                 <input
@@ -120,6 +173,7 @@ export default function Login() {
                   placeholder="you@example.com"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
+                  required
                 />
 
                 {/* PASSWORD INPUT */}
@@ -128,6 +182,7 @@ export default function Login() {
                   placeholder="Create a Password"
                   value={regPass}
                   onChange={(e) => setRegPass(e.target.value)}
+                  required
                 />
 
                 {/* PASSWORD REQUIREMENTS */}
@@ -170,14 +225,14 @@ export default function Login() {
 
                 <button
                   type="submit"
-                  disabled={!passValid}
+                  disabled={!passValid || isRegisteringUser}
                   className={`mt-4 ${
-                    passValid
+                    passValid && !isRegisteringUser
                       ? "bg-blue-500 hover:bg-blue-400"
                       : "bg-gray-600 cursor-not-allowed"
                   }`}
                 >
-                  Create Account
+                  {isRegisteringUser ? "Creating Account..." : "Create Account"}
                 </button>
               </form>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function Compare() {
@@ -8,6 +8,12 @@ export default function Compare() {
   const [fuelUsed, setFuelUsed] = useState("");
   const [fuelPrice, setFuelPrice] = useState("");
   const [result, setResult] = useState(null);
+
+  // Animated values
+  const [animatedMPGA, setAnimatedMPGA] = useState(0);
+  const [animatedCostA, setAnimatedCostA] = useState(0);
+  const [animatedMPGB, setAnimatedMPGB] = useState(0);
+  const [animatedCostB, setAnimatedCostB] = useState(0);
 
   const models = [
     { id: "c_300", name: "C 300 Sedan" },
@@ -35,23 +41,111 @@ export default function Compare() {
         }),
       });
 
+      if (!res.ok) {
+        throw new Error(`Backend responded with status: ${res.status} ${res.statusText}`);
+      }
+
       const data = await res.json();
       setResult(data);
+      // Reset animated values when new result comes in
+      setAnimatedMPGA(0);
+      setAnimatedCostA(0);
+      setAnimatedMPGB(0);
+      setAnimatedCostB(0);
     } catch (err) {
-      alert("Backend not responding.");
+      console.error("Compare error:", err);
+      let errorMessage = "Backend not responding.";
+      
+      if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+        errorMessage = "Cannot connect to backend server. Please ensure the backend is running on http://127.0.0.1:8000";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      alert(`❌ ${errorMessage}\n\nCheck the browser console (F12) for more details.`);
     }
   };
 
+  // ---------------------- ANIMATION EFFECT ----------------------
+  useEffect(() => {
+    if (!result) return;
+
+    let step = 0;
+    const steps = 60;
+    const duration = 1500;
+
+    const incMPGA = result.model_a.predicted_mpg / steps;
+    const incCostA = result.model_a.trip_cost / steps;
+    const incMPGB = result.model_b.predicted_mpg / steps;
+    const incCostB = result.model_b.trip_cost / steps;
+
+    const interval = setInterval(() => {
+      step++;
+      setAnimatedMPGA((prev) => Math.min(prev + incMPGA, result.model_a.predicted_mpg));
+      setAnimatedCostA((prev) => Math.min(prev + incCostA, result.model_a.trip_cost));
+      setAnimatedMPGB((prev) => Math.min(prev + incMPGB, result.model_b.predicted_mpg));
+      setAnimatedCostB((prev) => Math.min(prev + incCostB, result.model_b.trip_cost));
+      if (step >= steps) clearInterval(interval);
+    }, duration / steps);
+
+    return () => clearInterval(interval);
+  }, [result]);
+
+  // Generate professional recommendation text
+  const getRecommendationText = () => {
+    if (!result) return "";
+    
+    const cheaperModel = result.model_a.trip_cost < result.model_b.trip_cost 
+      ? result.model_a 
+      : result.model_b;
+    const expensiveModel = result.model_a.trip_cost >= result.model_b.trip_cost 
+      ? result.model_a 
+      : result.model_b;
+    
+    const savings = Math.abs(result.model_a.trip_cost - result.model_b.trip_cost);
+    
+    return `Mercefueler recommends the ${cheaperModel.model_display_name} over the ${expensiveModel.model_display_name} as it saves $${savings.toFixed(2)} on this trip.`;
+  };
+
   return (
-    <div className="flex w-full min-h-screen px-6 py-12 gap-10 justify-center items-start text-white overflow-y-auto">
+    <div 
+      className="flex w-full min-h-screen px-6 py-12 gap-10 justify-center items-center text-white relative"
+      style={{
+        backgroundImage: `url(${process.env.PUBLIC_URL + "/mercedes-bg.jpg"})`,
+        backgroundSize: "80%",
+        backgroundPosition: "center center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundColor: "#000",
+      }}
+    >
+      {/* Overlay for blur and glow effects */}
+      <div className="overlay absolute inset-0 pointer-events-none"></div>
+      
+      {/* Content wrapper with relative positioning */}
+      <div className="relative z-10 flex gap-10 justify-center items-center">
 
       {/* LEFT — INPUT PANEL */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#0e1b2b]/70 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_40px_rgba(0,200,255,0.2)] w-[380px]"
+        className="bg-[#0e1b2b]/70 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_40px_rgba(0,200,255,0.2)] w-[380px] relative"
+        style={{
+          boxShadow: "0 0 40px rgba(0,200,255,0.2), 0 0 80px rgba(0,200,255,0.1)",
+        }}
       >
-        <h1 className="text-center text-3xl font-bold mb-6 neon-text">Compare Models</h1>
+        {/* Glowing effect from UI box */}
+        <div 
+          className="absolute inset-0 rounded-3xl pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at center, rgba(0, 200, 255, 0.15), transparent 70%)",
+            filter: "blur(60px)",
+            animation: "pulse 4s ease-in-out infinite",
+            zIndex: 0,
+          }}
+        ></div>
+        <div className="relative z-10">
+        <h1 className="text-center text-3xl font-bold mb-6 glow-text">Compare Models</h1>
 
         {/* Model A */}
         <select
@@ -108,6 +202,7 @@ export default function Compare() {
         >
           Compare
         </motion.button>
+        </div>
       </motion.div>
 
       {/* RIGHT — RESULTS PANEL */}
@@ -116,48 +211,125 @@ export default function Compare() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-[#0e1b2b]/70 backdrop-blur-xl p-8 rounded-3xl shadow-[0_0_40px_rgba(0,200,255,0.2)] 
-                     w-[420px] max-h-[80vh] overflow-y-auto"
+                     w-[420px] max-h-[80vh] overflow-y-auto relative"
+          style={{
+            boxShadow: "0 0 40px rgba(0,200,255,0.2), 0 0 80px rgba(0,200,255,0.1)",
+          }}
         >
-          <h2 className="text-2xl font-bold mb-6 neon-text text-center">Results</h2>
+          {/* Glowing effect from UI box */}
+          <div 
+            className="absolute inset-0 rounded-3xl pointer-events-none"
+            style={{
+              background: "radial-gradient(circle at center, rgba(0, 200, 255, 0.15), transparent 70%)",
+              filter: "blur(60px)",
+              animation: "pulse 4s ease-in-out infinite",
+              zIndex: 0,
+            }}
+          ></div>
+          <div className="relative z-10">
+          <h2 className="text-2xl font-bold mb-6 glow-text text-center">Results</h2>
 
           {/* Model A */}
-<div className="mb-8 p-6 rounded-2xl bg-[#07111f]/70 border border-cyan-400/40 shadow-[0_0_25px_rgba(0,200,255,0.18)]">
-  <h3 className="text-2xl font-bold mb-4 text-cyan-300">
-    {result.model_a.model_display_name}
-  </h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 p-6 rounded-2xl bg-[#07111f]/70 border border-cyan-400/40 relative"
+            style={{
+              boxShadow: "0 0 25px rgba(0,200,255,0.3), 0 0 50px rgba(0,200,255,0.15)",
+            }}
+          >
+            {/* Glowing effect from box */}
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: "radial-gradient(circle at center, rgba(0, 200, 255, 0.1), transparent 70%)",
+                filter: "blur(40px)",
+                animation: "pulse 3s ease-in-out infinite",
+                zIndex: 0,
+              }}
+            ></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl font-bold mb-4 text-cyan-300">
+                {result.model_a.model_display_name}
+              </h3>
 
-  <p className="text-lg mb-2">
-    🚗 <b>MPG:</b> {result.model_a.predicted_mpg.toFixed(2)}
-  </p>
+              <p className="text-lg mb-2">
+                🚗 <b>MPG:</b> {animatedMPGA.toFixed(2)}
+              </p>
 
-  <p className="text-lg">
-    ⛽ <b>Trip Cost:</b> ${result.model_a.trip_cost.toFixed(2)}
-  </p>
-</div>
+              <p className="text-lg">
+                ⛽ <b>Trip Cost:</b> ${animatedCostA.toFixed(2)}
+              </p>
+            </div>
+          </motion.div>
 
           {/* Model B */}
-<div className="mb-8 p-6 rounded-2xl bg-[#07111f]/70 border border-cyan-400/40 shadow-[0_0_25px_rgba(0,200,255,0.18)]">
-  <h3 className="text-2xl font-bold mb-4 text-cyan-300">
-    {result.model_b.model_display_name}
-  </h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8 p-6 rounded-2xl bg-[#07111f]/70 border border-cyan-400/40 relative"
+            style={{
+              boxShadow: "0 0 25px rgba(0,200,255,0.3), 0 0 50px rgba(0,200,255,0.15)",
+            }}
+          >
+            {/* Glowing effect from box */}
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: "radial-gradient(circle at center, rgba(0, 200, 255, 0.1), transparent 70%)",
+                filter: "blur(40px)",
+                animation: "pulse 3s ease-in-out infinite",
+                zIndex: 0,
+              }}
+            ></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl font-bold mb-4 text-cyan-300">
+                {result.model_b.model_display_name}
+              </h3>
 
-  <p className="text-lg mb-2">
-    🚗 <b>MPG:</b> {result.model_b.predicted_mpg.toFixed(2)}
-  </p>
+              <p className="text-lg mb-2">
+                🚗 <b>MPG:</b> {animatedMPGB.toFixed(2)}
+              </p>
 
-  <p className="text-lg">
-    ⛽ <b>Trip Cost:</b> ${result.model_b.trip_cost.toFixed(2)}
-  </p>
-</div>
+              <p className="text-lg">
+                ⛽ <b>Trip Cost:</b> ${animatedCostB.toFixed(2)}
+              </p>
+            </div>
+          </motion.div>
+          
           {/* AI Recommendation */}
-<div className="p-6 rounded-2xl bg-[#002630]/80 border border-green-400/40 shadow-[0_0_25px_rgba(0,255,140,0.15)]">
-  <h3 className="text-2xl font-bold text-green-300">AI Recommendation</h3>
-  <p className="mt-4 text-lg leading-relaxed opacity-90">
-    {result.ai_reason}
-  </p>
-</div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="p-6 rounded-2xl bg-[#002630]/80 border border-green-400/40 relative"
+            style={{
+              boxShadow: "0 0 25px rgba(0,255,140,0.3), 0 0 50px rgba(0,255,140,0.15)",
+            }}
+          >
+            {/* Glowing effect from box */}
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                background: "radial-gradient(circle at center, rgba(0, 255, 140, 0.1), transparent 70%)",
+                filter: "blur(40px)",
+                animation: "pulse 3s ease-in-out infinite",
+                zIndex: 0,
+              }}
+            ></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl font-bold text-green-300 mb-4">AI Recommendation</h3>
+              <p className="mt-4 text-lg leading-relaxed">
+                {getRecommendationText()}
+              </p>
+            </div>
+          </motion.div>
+          </div>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }
